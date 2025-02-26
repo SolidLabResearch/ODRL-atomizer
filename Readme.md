@@ -5,7 +5,12 @@ according to the [Rule Composition](https://www.w3.org/TR/odrl-model/#compositio
 defined it the ODRL Specification.
 
 ## Installation 
-(I will add the package to npm later)
+
+```
+npm i odrl-atomizer
+```
+
+Or clone the project via github
 
 ```bash
 git clone git@github.com:SolidLabResearch/ODRL-atomizer.git
@@ -15,17 +20,15 @@ npm install
 
 ## Usage
 
-Import the atomizer from the installed location
-
-```
-    import { PolicyAtomizer } from "./install/location"
+Import the odrl atomizer
+```js
+   import { PolicyAtomizer } from "odrl-atomizer"
 ```
 
 The atomizer follows the builder pattern,
 consisting of 2 loading functions, 
 an atomization function 
 and 4 extraction functions.
-
 ```js
 // Creating the builder
 // Use await as the extraction functions are async
