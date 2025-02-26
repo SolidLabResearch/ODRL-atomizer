@@ -1,0 +1,23 @@
+{
+  "name": "odrl-atomizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/n3": "^1.21.1",
+    "jsonld": "^8.3.3",
+    "n3": "^1.23.1",
+    "rdf-js": "^4.0.2",
+    "rdf-parse": "^4.0.0",
+    "rdf-serialize": "^4.0.1",
+    "rdf-vocabulary": "^1.0.1",
+    "stream-to-string": "^1.2.1",
+    "streamify-array": "^2.0.0",
+    "streamify-string": "^1.0.1"
+  }
+}
