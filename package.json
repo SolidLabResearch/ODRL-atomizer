@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/jsonld": "^1.5.15",
     "@types/n3": "^1.21.1",
     "jsonld": "^8.3.3",
     "n3": "^1.23.1",

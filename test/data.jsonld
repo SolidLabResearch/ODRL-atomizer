@@ -1,25 +1,40 @@
 {
     "@context": "http://www.w3.org/ns/odrl.jsonld",
-    "@type": "Set",
-    "uid": "http://example.com/policy:5555",
-    "profile": "http://example.com/odrl:profile:08",
-    "conflict": "perm",
-    "permission": [{
-        "uid": "http://rule.display",
-        "target": "http://example.com/photoAlbum:55",
-        "action": "display, play",
-        "assigner": "http://example.com/MyPix:55",
-        "assignee": "http://example.com/assignee:55"
-    }, {
-        "target": "http://example.com/photoAlbum:552",
-        "action": "show",
-        "assigner": "http://example.com/MyPix:552",
-        "assignee": "http://example.com/assignee:552"
-    }],
-    "prohibition": [{
-        "target": "http://example.com/photoAlbum:55",
-        "action": "archive",
-        "assigner": "http://example.com/MyPix:55",
-        "assignee": "http://example.com/assignee:55"
-    }]
+    "@graph": [
+        {
+            "@type": "Set",
+            "uid": "http://example.com/policy:5555",
+            "profile": "http://example.com/odrl:profile:08",
+            "conflict": "perm",
+            "permission": [{
+                "uid": "http://rule.play-display.org",
+                "target": "http://example.com/photoAlbum:55",
+                "action": [ "display", "play" ],
+                "assigner": "http://example.com/MyPix:55",
+                "assignee": "http://example.com/assignee:55"
+            }, {
+                "target": "http://example.com/photoAlbum:56",
+                "action": "use",
+                "assigner": "http://example.com/MyPix:56",
+                "assignee": "http://example.com/assignee:56"
+            }],
+            "prohibition": [{
+                "target": "http://example.com/photoAlbum:57",
+                "action": "archive",
+                "assigner": "http://example.com/MyPix:57",
+                "assignee": "http://example.com/assignee:57"
+            }]
+        }, {
+            "@type": "Request",
+            "uid": "http://example.com/request:1234",
+            "action": "use",
+            "permission": [{
+                "uid": "http://rule.display2",
+                "target": ["http://example.com/photoAlbum:58", "http://example.com/photoAlbum:59", "http://example.com/photoAlbum:60"],
+                "action": "archive, play",
+                "assigner": "http://example.com/MyPix:58",
+                "assignee": "http://example.com/assignee:58"
+            }]
+        }
+    ]
 }

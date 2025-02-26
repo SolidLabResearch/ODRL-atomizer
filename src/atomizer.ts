@@ -20,8 +20,7 @@ const { quad, namedNode, blankNode } = DataFactory
 // it can be split up into a set of policies each containing a single
 // atomic rule
 
-export function atomize(quads: Quad[]) {
-    const store = new Store(quads);
+export function atomize(store: Store) {
     const resultStore = new Store();
 
     /**
@@ -66,7 +65,8 @@ export function atomize(quads: Quad[]) {
          * Iterate over the rules of these policies
          * relevant predicate(s): odrl:permission, odrl:obligation, odrl:prohibition
          */
-        for (const [index, {pred, term}] of ruleSubjects.entries()) {
+        for (const {pred, term} of ruleSubjects) {
+
             if (term.termType === "Literal") {
                 throw new Error(`Policy rule ${term} is a literal value`)
             }
@@ -81,7 +81,9 @@ export function atomize(quads: Quad[]) {
                         ODRL.obligation,
                         ODRL.prohibition,
                         ODRL.uid,
-                        RDF.type
+                        RDF.type,
+                        ODRL.profile,
+                        ODRL.conflict
                     ].includes(quad.predicate.value as any)
                 ) {
                     store.addQuad(
@@ -101,7 +103,7 @@ export function atomize(quads: Quad[]) {
              * iterate over the actions
              * relevant predicate(s): odrl:action
              */
-            const actions = separatePredicateQuads(store, namedNode(ODRL.target), term)
+            const actions = separatePredicateQuads(store, namedNode(ODRL.action), term)
 
             /**
              * iterate over the assigners
@@ -118,40 +120,33 @@ export function atomize(quads: Quad[]) {
             /**
              * Now for each atomization combination, we instantiate a new rule
              */
-            for (const {id: targetId, quads: targetQuads} of (targets || [{id: undefined, quads: []}]) ) {
-                for (const {id: actionId, quads: actionQuads} of (actions || [{id: undefined, quads: []}])) {
-                    for (const {id: assignerId, quads: assignerQuads} of (assigners || [{id: undefined, quads: []}])) {
-                        for (const {id: assigneeId, quads: assigneeQuads} of (assignees || [{id: undefined, quads: []}])) {
-
-                            /**
+            for (const {id: targetId, quads: targetQuads} of (targets.length ? targets : [{id: undefined, quads: []}]) ) {
+                for (const {id: actionId, quads: actionQuads} of (actions.length ? actions : [{id: undefined, quads: []}])) {
+                    for (const {id: assignerId, quads: assignerQuads} of (assigners.length ? assigners : [{id: undefined, quads: []}])) {
+                        for (const {id: assigneeId, quads: assigneeQuads} of (assignees.length ? assignees : [{id: undefined, quads: []}])) {/**
                             * Instantiate new policy in the result Store (keep same policy identifier)
                             */
                             const newRuleSubject = blankNode();
-
                             /**
                             * Create new rule identifier, and copy over the old rule and all common quads
                             * that are shared between each atomized instance
                             */
                             resultStore.addQuad(quad(policySubject, pred, newRuleSubject, undefined))
                             if(term && term.termType === "NamedNode") resultStore.addQuad(quad(newRuleSubject, namedNode(EX.derivedFrom), term, undefined))
-
                             // Extract full subtree without: parties, assets and actions
                             const subtreeQuads = extractSubTree(store, term as NamedNode|BlankNode, [
                                 ODRL.target,
                                 ODRL.action,
                                 ODRL.assigner,
                                 ODRL.assignee,
-                            ].map(e => DataFactory.namedNode(e)))
-                                .map(q => { 
-                                    if(q.subject.value === term.value) {
-                                        return(quad(newRuleSubject, q.predicate, q.object, q.graph))
-                                    } else {
-                                        return q
-                                    } 
-                                })
-                            
+                            ]).map(q => { 
+                                if(q.subject.value === term.value) {
+                                    return(quad(newRuleSubject, q.predicate, q.object, q.graph))
+                                } else {
+                                    return q
+                                } 
+                            })
                             resultStore.addQuads(subtreeQuads)
-
                             if (targetId) resultStore.addQuads(replaceQuadSubjects(targetQuads, term, newRuleSubject))
                             if (actionId) resultStore.addQuads(replaceQuadSubjects(actionQuads, term, newRuleSubject))
                             if (assignerId) resultStore.addQuads(replaceQuadSubjects(assignerQuads, term, newRuleSubject))
@@ -164,7 +159,6 @@ export function atomize(quads: Quad[]) {
     }
     return resultStore
 }
-
 
 function separatePredicateQuads(store: Store, predicate: NamedNode, subject: Quad_Subject): {id: Quad_Object, quads: Quad[]}[] {
     const results: { id: Quad_Subject, quads: Quad[]}[] = []
@@ -191,10 +185,10 @@ function replaceQuadSubjects(quads: Quad[], oldSubject: Quad_Subject, newSubject
     })
 }
 
-function extractSubTree(store: Store, root: Quad_Subject, predicatesToSkip?: Term[]): Quad[] {
+export function extractSubTree(store: Store, root: Quad_Subject, predicatesToSkip?: string[]): Quad[] {
     let quads: Quad[] = []
     for (let quad of store.getQuads(root, null, null, null)) {
-        if (predicatesToSkip && predicatesToSkip.includes(quad.predicate)) continue
+        if (predicatesToSkip && predicatesToSkip.includes(quad.predicate.value)) continue
         quads.push(quad)
         // We cannot iterate over literals
         if(quad.object.termType === "Literal") continue;
@@ -209,12 +203,3 @@ function extractSubTree(store: Store, root: Quad_Subject, predicatesToSkip?: Ter
     }
     return quads;
 }
-
-
-
-
-
-
-
-
-

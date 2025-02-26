@@ -29,6 +29,7 @@ export const ODRL = createVocabulary(
     'leftOperand',
     'operator',
     'rightOperand',
+    'conflict',
   );
 
 
