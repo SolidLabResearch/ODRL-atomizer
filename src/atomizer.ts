@@ -133,8 +133,7 @@ export function atomize(quads: Quad[]) {
                             * that are shared between each atomized instance
                             */
                             resultStore.addQuad(quad(policySubject, pred, newRuleSubject, undefined))
-                            resultStore.addQuad(quad(newRuleSubject, namedNode(EX.derivedFrom), term, undefined))
-                            console.log('derived from', quad(newRuleSubject, namedNode(EX.derivedFrom), term, undefined))
+                            if(term && term.termType === "NamedNode") resultStore.addQuad(quad(newRuleSubject, namedNode(EX.derivedFrom), term, undefined))
 
                             // Extract full subtree without: parties, assets and actions
                             const subtreeQuads = extractSubTree(store, term as NamedNode|BlankNode, [

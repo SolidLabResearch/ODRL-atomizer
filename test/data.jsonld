@@ -5,8 +5,9 @@
     "profile": "http://example.com/odrl:profile:08",
     "conflict": "perm",
     "permission": [{
+        "uid": "http://rule.display",
         "target": "http://example.com/photoAlbum:55",
-        "action": "display",
+        "action": "display, play",
         "assigner": "http://example.com/MyPix:55",
         "assignee": "http://example.com/assignee:55"
     }, {
