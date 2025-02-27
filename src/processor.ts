@@ -9,6 +9,8 @@ import { extractSubTree } from "./atomizer";
 import { Frame, JsonLdObj } from "jsonld/jsonld-spec";
 const stringifyStream = require('stream-to-string');
 
+type RuleType = "permission" | "prohibition" | "obligation";
+
 export async function processRDF(input: string, contentType: string): Promise<Quad[]> {
     return new Promise((resolve, reject) => {
         const textStream = require('streamify-string')(input);
@@ -82,32 +84,32 @@ export async function extractFramedPoliciesFromStore(store: Store, frame?: Frame
     }))
 }
 
-export async function extractRulesFromStore(store: Store): Promise<{id: string, quads: Quad[]}[]> {
-    const ruleSubjects: Set<Quad_Object> = new Set(
-        [ 
-            ...(store.getObjects(null, ODRL.permission, null)), 
-            ...(store.getObjects(null, ODRL.obligation, null)), 
-            ...(store.getObjects(null, ODRL.prohibition, null)), 
-        ]
-    );
-    return Array.from(ruleSubjects).filter(id => id.termType !== 'Literal').map(id => {
-        const quads = extractSubTree(store, id as Quad_Subject)
-        return ({id: id.value, quads})
-    })
+export async function extractRulesFromStore(store: Store): Promise<{type: RuleType, quads: Quad[]}[]> {
+    const permSubjects = store.getObjects(null, ODRL.permission, null);
+    const obligSubjects = store.getObjects(null, ODRL.obligation, null);
+    const prohSubjects = store.getObjects(null, ODRL.prohibition, null);
+
+    let results: {type: RuleType, quads: Quad[]}[] = []
+
+    for (let { subjectList, type } of [
+        { subjectList: permSubjects, type: "permission" as RuleType },
+        { obligSubjects: obligSubjects, type: "obligation" as RuleType },
+        { prohSubjects: prohSubjects, type: "prohibition" as RuleType },
+    ]) {
+        if (!subjectList) continue
+        results = results.concat(
+            subjectList.filter(id => id.termType !== 'Literal').map(id => {
+                const quads = extractSubTree(store, id as Quad_Subject)
+                return ({type, quads})
+            })
+        )
+    }
+    return results
 }
 
-export async function extractFramedRulesFromStore(store: Store, frame?: Frame): Promise<Object[]> {
-    const ruleSubjects: Set<Quad_Object> = new Set(
-        [ 
-            ...(store.getObjects(null, ODRL.permission, null)), 
-            ...(store.getObjects(null, ODRL.obligation, null)), 
-            ...(store.getObjects(null, ODRL.prohibition, null)), 
-        ]
-    );
-
-    return Promise.all(Array.from(ruleSubjects).filter(id => id.termType !== 'Literal').map(async(id) => {
-        const quads = extractSubTree(store, id as Quad_Subject)
-        const framed = await frameRule(new Store(quads), frame)
-        return framed
+export async function extractFramedRulesFromStore(store: Store, frame?: Frame): Promise<{type: RuleType, rule: Object}[]> {
+    const ruleQuads = await extractRulesFromStore(store);
+    return Promise.all(ruleQuads.map(async ({ type, quads }) => {
+        return ({type, rule: await frameRule(new Store(quads), frame) })
     }))
 }

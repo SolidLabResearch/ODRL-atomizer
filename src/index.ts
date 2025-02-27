@@ -10,10 +10,11 @@ import { Frame } from "jsonld/jsonld-spec";
 export class PolicyAtomizer {
 
     private inputStore: Store;
-    private loadingStack: Promise<void>[] = [];
+    private loadingStack: Promise<void>[];
     private atomizedStore?: Promise<Store>;
     constructor() {
         this.inputStore = new Store();
+        this.loadingStack = [];
     }
 
     public loadQuads (quads: Quad[]) {
@@ -65,6 +66,5 @@ export class PolicyAtomizer {
         const store = await this.atomizedStore;
         return await extractFramedRulesFromStore(store, frame)
     }
-
 }
 
