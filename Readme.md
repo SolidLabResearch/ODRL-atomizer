@@ -44,11 +44,11 @@ await new PolicyAtomizer()
     .atomize()
 
     // then the data can be extracted 
-    // as the atomized policies of the form {id: policyId, quads: policyQuads}[]
+    // as the atomized policies of the form {id: string, quads: Quad[]}[]
     .getPolicies()
     // as the atomized policies as individual framed JSONLD Objects
     .getFramedPolicies(frame?: Frame)
-    // as the atomized rules of all policies of the form {id: ruleId, quads: ruleQuads}[]
+    // as the atomized rules of all policies of the form {id: string, quads: Quad[]}[]
     .getRules() 
     // as the atomized rules as individual framed JSONLD Objects
     .getFramedRules(frame?: Frame) {
